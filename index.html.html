@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Kitchen Appliance Selector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-5">
+    <div class="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow">
+        <h1 class="text-2xl font-bold mb-5">Daftar Kebutuhan Ruangan</h1>
+        <table class="w-full text-xs border-collapse border border-gray-300">
+            <thead>
+                <tr class="bg-gray-800 text-white">
+                    <th class="border p-2">Ruang</th>
+                    <th class="border p-2">Item</th>
+                    <th class="border p-2">Kebutuhan</th>
+                    <th class="border p-2">Pilih Merk</th>
+                    <th class="border p-2">Detail (E-J)</th>
+                    <th class="border p-2">Input Klien</th>
+                </tr>
+            </thead>
+            <tbody id="data-body"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/1rSPs4C0pIXefiK1mvFOSSze1L5kz9pb7mML-7Uw6XqQ/export?format=csv&sheet=DATABASE';
+
+        async function loadData() {
+            const res = await fetch(CSV_URL);
+            const text = await res.text();
+            const rows = text.split('\n').slice(1);
+            const tbody = document.getElementById('data-body');
+
+            rows.forEach((row, i) => {
+                const cols = row.split(',').map(c => c.trim());
+                if (cols.length < 10) return;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="border p-2">${cols[0]}</td>
+                    <td class="border p-2 font-bold">${cols[1]}</td>
+                    <td class="border p-2">
+                        <select onchange="updateRow(${i}, this.value)" class="border p-1">
+                            <option value="">--Pilih--</option>
+                            <option value="Butuh Beli Baru">Butuh Beli Baru</option>
+                            <option value="Sudah Punya">Sudah Punya</option>
+                            <option value="Tidak Butuh">Tidak Butuh</option>
+                        </select>
+                    </td>
+                    <td class="border p-2">
+                        <select id="merk-${i}" disabled onchange="showDetail(${i})" class="border p-1 w-full">
+                            <option value="${cols[3]}">${cols[3]}</option>
+                        </select>
+                    </td>
+                    <td class="border p-2" id="detail-${i}">-</td>
+                    <td class="border p-2"><input type="text" class="border w-full"></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateRow(i, val) {
+            const merkSelect = document.getElementById(`merk-${i}`);
+            merkSelect.disabled = (val !== "Butuh Beli Baru");
+            if (val !== "Butuh Beli Baru") document.getElementById(`detail-${i}`).innerHTML = val;
+        }
+
+        function showDetail(i) {
+            // Logika menampilkan E sampai J (Nama Item, Gambar, Spec, Ukuran, Harga, Link)
+            // Di sini Anda bisa mengambil data dari array 'cols' tadi
+            document.getElementById(`detail-${i}`).innerHTML = "Detail Produk Muncul di sini...";
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
